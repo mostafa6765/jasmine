@@ -910,6 +910,14 @@ describe("New HtmlReporter", function() {
         reporter.initialize();
 
         reporter.jasmineStarted({ totalSpecsDefined: 1 });
+        reporter.suiteStarted({
+          id: 1,
+          description: "A suite"
+        });
+        reporter.suiteStarted({
+          id: 2,
+          description: "inner suite"
+        });
 
         var passingResult = {id: 123, status: "passed", passedExpectations: [{passed: true}], failedExpectations: []};
         reporter.specStarted(passingResult);
@@ -919,7 +927,7 @@ describe("New HtmlReporter", function() {
           id: 124,
           status: "failed",
           description: "a failing spec",
-          fullName: "a suite with a failing spec",
+          fullName: "a suite inner suite with a failing spec",
           passedExpectations: [],
           failedExpectations: [
             {
@@ -930,6 +938,9 @@ describe("New HtmlReporter", function() {
         };
         reporter.specStarted(failingResult);
         reporter.specDone(failingResult);
+        reporter.suiteDone({});
+        reporter.suiteDone({});
+        reporter.suiteDone({});
         reporter.jasmineDone({});
       });
 
@@ -951,8 +962,8 @@ describe("New HtmlReporter", function() {
         expect(specDiv.getAttribute("class")).toEqual("jasmine-description");
 
         var specLink = specDiv.childNodes[0];
-        expect(specLink.getAttribute("title")).toEqual("a suite with a failing spec");
-        expect(specLink.getAttribute("href")).toEqual("?foo=bar&spec=a suite with a failing spec");
+        expect(specLink.getAttribute("title")).toEqual("a suite inner suite with a failing spec");
+        expect(specLink.getAttribute("href")).toEqual("?foo=bar&spec=a suite inner suite with a failing spec");
 
         var message = failure.childNodes[1].childNodes[0];
         expect(message.getAttribute("class")).toEqual("jasmine-result-message");
@@ -961,6 +972,20 @@ describe("New HtmlReporter", function() {
         var stackTrace = failure.childNodes[1].childNodes[1];
         expect(stackTrace.getAttribute("class")).toEqual("jasmine-stack-trace");
         expect(stackTrace.innerHTML).toEqual("a stack trace");
+      });
+
+      it('provides links to focus on each suite that contains a failure', function() {
+        var description = container.querySelector('.jasmine-failures .jasmine-description');
+        var links = description.querySelectorAll('a');
+
+        expect(description.textContent).toEqual('A suite / inner suite / a failing spec');
+
+        expect(links[0].textContent).toEqual('A suite');
+        // TODO: need to include existing query params other than spec
+        expect(links[0].href).toMatch(/\?spec=A%20suite/);
+
+        expect(links[1].textContent).toEqual('inner suite');
+        expect(links[1].href).toMatch(/\?spec=A%20suite%20inner%20suite/);
       });
 
       it("allows switching between failure details and the spec summary", function() {

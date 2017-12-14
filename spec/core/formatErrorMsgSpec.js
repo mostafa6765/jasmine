@@ -11,3 +11,21 @@ describe('formatErrorMsg', function () {
     expect(formator('message2')).toBe('api : message2\nUsage: with a param');
   });
 });
+
+describe("a thing", function() {
+  it("fails", function() {
+    expect(true).toBe(false);
+  });
+
+  describe("nested 1", function() {
+    it("fails", function() {
+      expect(true).toBe(false);
+    });
+
+    describe("nested 2", function() {
+    it("fails", function() {
+      expect(true).toBe(false);
+    });
+    });
+  });
+});
